@@ -1,29 +1,42 @@
+import fs from 'fs';
+import path from 'path';
 import { Agent, WindowBufferMemory } from 'alith';
+
+const personaPath = path.join(__dirname, 'persona.txt');
+const personaTemplate = fs.readFileSync(personaPath, 'utf-8');
+
+interface MilkmanOptions {
+  model?: string;
+  customContext?: string;
+}
 
 export class Milkman {
   public static readonly AGENT_NAME = 'MilkMan';
+  public static readonly DEFAULT_AGENT_MODEL = 'gpt-4o';
 
-  private agent: Agent;
+  public agent: Agent;
 
-  constructor() {
-    this.agent = this.createMilkManAgent();
+  constructor(options: MilkmanOptions = {}) {
+    this.agent = this.createMilkManAgent(options);
   }
 
-  public getAlithAgent(): Agent {
-    return this.agent;
-  }
+  private createMilkManAgent(_options: MilkmanOptions): Agent {
+    const options: MilkmanOptions = {
+      model: Milkman.DEFAULT_AGENT_MODEL,
+      customContext: '',
+      ..._options,
+    };
 
-  private createMilkManAgent(model = 'gpt-4o', customContext?: string): Agent {
+    const persona = personaTemplate.replace(
+      '${AGENT_NAME}',
+      Milkman.AGENT_NAME
+    );
+
     return new Agent({
-      model,
-      preamble: `
-You are ${Milkman.AGENT_NAME}, the gamer mascot of Score Milk, a Web3 decentralized online gaming platform. Respond to messages with relevant information and maintain the context of the conversation.
-Always reply in a single line. Do not use markdown formatting, just plain text. Keep your responses small, but playfula. Do not use emojis or any other special characters.
-Within the message, you might see a line that starts with "[SYSTEM]:", treat it as a system message, not a user message. The system messages can give you context and also give commands. If the system message is a command, behave accordingly. Other lines without "[SYSTEM]:" in the same message are user messages.
-
-${customContext || ''}
-      `,
+      model: options.model,
+      preamble: `${persona} ${options.customContext || ''}`,
       memory: new WindowBufferMemory(),
     });
   }
 }
+

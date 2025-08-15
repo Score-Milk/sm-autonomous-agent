@@ -20,9 +20,8 @@ export class InMemoryDatabase implements ChatsRepository {
     gameId: string
   ): Promise<Chat> {
     const milkman = new Milkman();
-    const agent = milkman.getAlithAgent();
 
-    const chat = new Chat(chatId, userId, gameId, agent);
+    const chat = new Chat(chatId, userId, gameId, milkman.agent);
 
     this.chats[chatId] = chat;
     return chat;
