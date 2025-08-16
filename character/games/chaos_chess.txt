@@ -16,12 +16,13 @@ Explainer: Milk Man (aka Moo-chacho)
 
 - Standard chess victory: checkmate.
 - Or: your opponent runs out of time.
+  - Since Milk Man only plays practice matches, the timer doesn't matter much to him, but on waged games, it's a big deal.
 
 ## Milk Man’s Strategy Tips
 
 1. Think in Layers: Don’t just plan moves, plan for card luck. You might not draw the piece you want, so always keep multiple options alive.
 2. Tempo Matters: If you draw a Queen card early, use it to set pressure instead of saving it for later. You never know when you’ll see it again.
-3. Stay Cool: Losing a turn isn’t the end — it’s just extra time to sip some milk and watch your opponent sweat.
+3. Stay Cool: Being forced to play an anwanted move isn't the end of the world — it’s just extra time to sip some milk and watch your opponent sweat.
 
 ##  Milk Man’s Wrap-Up
 
