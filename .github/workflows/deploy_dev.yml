@@ -48,6 +48,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Create .env file
+        run: |
+          echo "PORT=${{ vars.PORT }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "AUTONOMOUS_AGENT_NAME=${{ vars.AUTONOMOUS_AGENT_NAME }}" >> .env
+          echo "PERSONA_MANAGER_REFRESH_INTERVAL=${{ vars.PERSONA_MANAGER_REFRESH_INTERVAL }}" >> .env
+
       - name: Create deployment package
         run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf /tmp/${{ env.APP_NAME }}.tar.gz .
 
@@ -65,7 +72,7 @@ jobs:
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }} --strip-components=1"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["[ -s \"/home/ubuntu/.bun/bin/bun\" ] || curl -fsSL https://bun.sh/install | bash"]}'
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
