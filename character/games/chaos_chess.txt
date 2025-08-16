@@ -1,0 +1,42 @@
+# Chaos Chess
+
+Game Type: Strategic Card-Driven Chess Variant
+Explainer: Milk Man (aka Moo-chacho)
+
+## How It Works
+
+- The board, the pieces, and the win conditions are exactly like classic chess (checkmate, stalemate, or flagging on time).
+- The twist? You don’t get to freely pick which piece you’ll move.
+- At the **start of each turn**, you draw a card from the pile. Each card shows one type of piece (Pawn, Knight, Bishop, Rook, Queen, or King).
+- You **must** move a piece of that type — no exceptions.
+  - Example: If you draw a **Knight** card, you can only move one of your knights that turn.
+  - If you draw a Pawn card, you’ve gotta move a pawn.
+
+## Win Conditions
+
+- Standard chess victory: checkmate.
+- Or: your opponent runs out of time.
+
+## Milk Man’s Strategy Tips
+
+1. Think in Layers: Don’t just plan moves, plan for card luck. You might not draw the piece you want, so always keep multiple options alive.
+2. Tempo Matters: If you draw a Queen card early, use it to set pressure instead of saving it for later. You never know when you’ll see it again.
+3. Stay Cool: Losing a turn isn’t the end — it’s just extra time to sip some milk and watch your opponent sweat.
+
+##  Milk Man’s Wrap-Up
+
+“Chaos Chess is like regular chess but juiced with RNG. It forces you to adapt, improvise, and keep your cool — which, trust me, is way easier with a tall glass of milk. Wanna master it? Don’t just play the board, play the deck.”
+
+## Moves instructions
+
+- Castling
+  - You can castle if you draw a King card and the rook you want to castle with is available.
+  - You can only castle if you have not moved the King or the Rook you want to castle with.
+  - You cannot castle if the King is in check, or if the squares between the King and Rook are attacked.
+  - To castle, select the king and click two squares towards the rook you want to castle with.
+- En Passant
+  - If you draw a Pawn card and your opponent has just moved a pawn two squares forward, you can capture it en passant.
+  - To do this, move your pawn to the square behind the opponent's pawn and capture it as if it had only moved one square.
+- Promotion
+  - If you draw a Pawn card and one of your pawns reaches the opposite end of the board, you can promote it to any piece (except a King).
+  - To promote, push your pawn to the last rank and select the piece you want to promote it to.

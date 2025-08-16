@@ -5,9 +5,10 @@ import { env } from '../config/env';
 
 class PersonaManager {
   private static instance: PersonaManager;
+  private refreshInterval: NodeJS.Timeout | null = null;
+
   public personaTemplate = '';
-  private readonly refreshInterval = env.PERSONA_MANAGER_REFRESH_INTERVAL;
-  private intervalId: NodeJS.Timeout | null = null;
+  public gamesInstructions: Record<string, string> = {};
 
   private constructor() { }
 
@@ -19,29 +20,33 @@ class PersonaManager {
   }
 
   public async initialize(): Promise<void> {
-    const personaTemplate = await this.fetchPersonaTemplate();
-    if (!personaTemplate) {
-      throw new Error('Failed to load persona template. Please ensure the persona file exists.');
-    }
-    this.personaTemplate = personaTemplate;
+    this.setup();
 
-    if (this.intervalId) {
-      clearInterval(this.intervalId)
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval)
     }
 
-    this.intervalId = setInterval(() => this.refreshPersona(), this.refreshInterval);
-    console.log(`PersonaManager initialized and persona will refresh every ${env.PERSONA_MANAGER_REFRESH_INTERVAL / 60 / 1000} ${env.PERSONA_MANAGER_REFRESH_INTERVAL > 1000 ? 'minutes' : 'seconds'}.`);
+    this.refreshInterval = setInterval(() => this.setup(), env.PERSONA_MANAGER_REFRESH_INTERVAL);
+    console.log(`PersonaManager initialized and persona will refresh every ${env.PERSONA_MANAGER_REFRESH_INTERVAL / 60 / 1000} ${env.PERSONA_MANAGER_REFRESH_INTERVAL > 1000 ? 'minutes' : 'seconds'}`);
   }
 
-  private async refreshPersona(): Promise<void> {
+  private async setup(): Promise<void> {
     try {
       const personaTemplate = await this.fetchPersonaTemplate();
       if (!personaTemplate) {
-        console.warn('Failed to refresh persona template. Using existing template.');
+        console.warn('Failed to refresh persona template. Using existing template');
         return;
       }
-      this.personaTemplate = personaTemplate;
-      console.log('Persona template refreshed.');
+      this.personaTemplate = `
+        ${personaTemplate}
+
+        You may receive a message beginning with "[SYSTEM]:" at any time. This is a system message, treat it as such. It will provide context or command an action, behave accordingly.
+      `;
+
+      const chaosChessInstructions = await this.fetchChaosChessInstructions();
+      if (chaosChessInstructions) this.gamesInstructions['chaoschess'] = chaosChessInstructions;
+
+      console.log('Persona template and game instructions setup completed');
     } catch (error) {
       console.error('Failed to refresh persona template:', error);
     }
@@ -52,7 +57,17 @@ class PersonaManager {
     try {
       return await fs.readFile(personaPath, 'utf-8');
     } catch (error) {
-      console.warn(`Failed to load persona from ${personaPath}. Falling back to default persona.`, error);
+      console.warn(`Failed to load persona from ${personaPath}. Falling back to default persona`, error);
+      return null
+    }
+  }
+
+  async fetchChaosChessInstructions(): Promise<string | null> {
+    const instructionsPath = path.resolve(process.cwd(), 'character', 'games', 'chaos_chess.txt');
+    try {
+      return await fs.readFile(instructionsPath, 'utf-8');
+    } catch (error) {
+      console.warn(`Failed to load chaos chess instructions from ${instructionsPath}`, error);
       return null
     }
   }

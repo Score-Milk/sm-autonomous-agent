@@ -17,11 +17,11 @@ export class InMemoryDatabase implements ChatsRepository {
   async createChat(
     chatId: string,
     userId: string,
-    gameId: string
+    gameName: string
   ): Promise<Chat> {
     const autonomousAgent = new AutonomousAgent();
 
-    const chat = new Chat(chatId, userId, gameId, autonomousAgent.agent);
+    const chat = new Chat(chatId, userId, gameName, autonomousAgent.agent);
 
     this.chats[chatId] = chat;
     return chat;
