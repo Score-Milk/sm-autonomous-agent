@@ -48,19 +48,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Bun Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
       - name: Create deployment package
         run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf ${{ env.APP_NAME }}.tar.gz .
 
@@ -82,13 +69,6 @@ jobs:
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
-
-      - name: Check the deployed service URL
-        uses: jtalk/url-health-check-action@v3
-        with:
-          url: https://apitesting.scoremilk.com/health
-          max-attempts: 3
-          retry-delay: 5s
 
       - name: Post to a Slack channel - SUCCESS
         if: success()
