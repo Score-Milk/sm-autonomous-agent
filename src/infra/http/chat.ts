@@ -1,7 +1,7 @@
 import Elysia, { t } from 'elysia';
 import { Message, MessageMapper } from '../../app/models/message';
-import { Milkman } from '../../app/models/milkman';
 import { db } from '../database';
+import { env } from '../../app/config/env';
 
 export const chatRouter = new Elysia().ws('/ws', {
   query: t.Object({
@@ -27,8 +27,8 @@ export const chatRouter = new Elysia().ws('/ws', {
 
     const message = new Message(
       response,
-      Milkman.AGENT_NAME,
-      Milkman.AGENT_NAME,
+      env.AUTONOMOUS_AGENT_NAME,
+      env.AUTONOMOUS_AGENT_NAME,
       ws.data.query.gameId
     );
 
@@ -54,8 +54,8 @@ export const chatRouter = new Elysia().ws('/ws', {
     const response = await chat.agent.prompt(message);
     const responseMessage = new Message(
       response,
-      Milkman.AGENT_NAME,
-      Milkman.AGENT_NAME,
+      env.AUTONOMOUS_AGENT_NAME,
+      env.AUTONOMOUS_AGENT_NAME,
       ws.data.query.gameId
     );
     ws.send(MessageMapper.toResponse(responseMessage));

@@ -1,6 +1,6 @@
 import { Chat } from '../../../app/models/chat';
 import { ChatsRepository } from '../repositories/chats';
-import { Milkman } from '../../../app/models/milkman';
+import { AutonomousAgent } from '../../../app/models/autonomous-agent';
 
 export class InMemoryDatabase implements ChatsRepository {
   private chats: Record<string, Chat> = {};
@@ -19,9 +19,9 @@ export class InMemoryDatabase implements ChatsRepository {
     userId: string,
     gameId: string
   ): Promise<Chat> {
-    const milkman = new Milkman();
+    const autonomousAgent = new AutonomousAgent();
 
-    const chat = new Chat(chatId, userId, gameId, milkman.agent);
+    const chat = new Chat(chatId, userId, gameId, autonomousAgent.agent);
 
     this.chats[chatId] = chat;
     return chat;
