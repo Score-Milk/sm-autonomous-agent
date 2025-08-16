@@ -63,7 +63,8 @@ jobs:
           aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}.tar.gz
 
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["[ -s \"/home/ubuntu/.bun/bin/bun\" ] || curl -fsSL https://bun.sh/install | bash"]}'
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
