@@ -45,8 +45,6 @@ class PersonaManager {
 
       const chaosChessInstructions = await this.fetchChaosChessInstructions();
       if (chaosChessInstructions) this.gamesInstructions['chaoschess'] = chaosChessInstructions;
-
-      console.log('Persona template and game instructions setup completed');
     } catch (error) {
       console.error('Failed to refresh persona template:', error);
     }
