@@ -15,6 +15,9 @@ export const chatRouter = new Elysia().ws('/ws', {
   }),
 
   open: async (ws) => {
+    const existingChat = await db.getChat(ws.data.query.chatId).catch(() => null);
+    if (existingChat) return;
+
     const chat = await db.createChat(
       ws.data.query.chatId,
       ws.data.query.userId,
