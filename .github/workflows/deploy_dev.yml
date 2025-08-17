@@ -9,6 +9,7 @@ env:
   AWS_REGION: us-east-2
   ENVIRONMENT: DEVELOPMENT
   APP_NAME: sm-autonomous-agent
+  EC2_INSTANCE_ID: i-004389b62710efe65
 
 jobs:
   deploy:
@@ -69,13 +70,13 @@ jobs:
         run: |
           aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}.tar.gz
 
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }} --strip-components=1"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }} --strip-components=1"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
 
       - name: Post to a Slack channel - SUCCESS
         if: success()
