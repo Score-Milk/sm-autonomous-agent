@@ -73,7 +73,6 @@ jobs:
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }} --strip-components=1"]
-          aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["[ -s \"/home/ubuntu/.bun/bin/bun\" ] || curl -fsSL https://bun.sh/install | bash"]}'
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
           aws ssm send-command --instance-ids i-004389b62710efe65 --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
