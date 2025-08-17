@@ -1,8 +1,8 @@
 import Elysia, { t } from 'elysia';
-import { Message, MessageMapper } from '../../app/models/message';
-import { db } from '../database';
 import { env } from '../../app/config/env';
+import { Message, MessageMapper } from '../../app/models/message';
 import { personaManager } from '../../app/models/persona-manager';
+import { db } from '../database';
 
 export const chatRouter = new Elysia().ws('/ws', {
   query: t.Object({
@@ -15,7 +15,9 @@ export const chatRouter = new Elysia().ws('/ws', {
   }),
 
   open: async (ws) => {
-    const existingChat = await db.getChat(ws.data.query.chatId).catch(() => null);
+    const existingChat = await db
+      .getChat(ws.data.query.chatId)
+      .catch(() => null);
     if (existingChat) return;
 
     const chat = await db.createChat(
@@ -24,15 +26,18 @@ export const chatRouter = new Elysia().ws('/ws', {
       ws.data.query.gameName
     );
 
-    const gameInstructions = personaManager.gamesInstructions[ws.data.query.gameName]
+    const gameInstructions =
+      personaManager.gamesInstructions[ws.data.query.gameName];
 
-    let welcomePrompt = `
-      ${gameInstructions
-        ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}\n\n`
-        : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}`}
+    const welcomePrompt = `
+      ${
+        gameInstructions
+          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}\n\n`
+          : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}`
+      }
 
       [SYSTEM]: Send a small welcome message to the user
-    `
+    `;
 
     const response = await chat.agent.prompt(welcomePrompt);
 
@@ -52,13 +57,13 @@ export const chatRouter = new Elysia().ws('/ws', {
   async message(ws, { message }) {
     const chat = await db.getChat(ws.data.query.chatId);
     if (!chat) {
-      const message = new Message(
+      const chatNotFoundMessage = new Message(
         'Chat not found. Please reconnect to start a new chat.',
         'System',
         'System',
         ws.data.query.gameName
       );
-      ws.send(MessageMapper.toResponse(message));
+      ws.send(MessageMapper.toResponse(chatNotFoundMessage));
       return;
     }
 

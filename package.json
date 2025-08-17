@@ -4,7 +4,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "format": "biome check --write"
   },
   "dependencies": {
     "alith": "^0.11.1",
@@ -22,7 +23,7 @@
   "module": "src/index.js",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
-      "npx ultracite format"
+      "bun run format"
     ]
   }
 }

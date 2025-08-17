@@ -1,12 +1,12 @@
-import z from "zod";
-
-import { autonomousAgentEnvSchema } from "./autonomous-agent";
-import { alithEnvSchema } from "./alith";
-import { personaManagerEnvSchema } from "./persona-manager";
+import z from 'zod';
+import { alithEnvSchema } from './alith';
+import { autonomousAgentEnvSchema } from './autonomous-agent';
+import { personaManagerEnvSchema } from './persona-manager';
 
 const baseEnvSchema = z.object({
-  PORT: z.string().transform(Number).default(8080)
-})
+  // biome-ignore lint/style/noMagicNumbers: constants can be defined here
+  PORT: z.string().transform(Number).default(8080),
+});
 
 export const envSchema = baseEnvSchema
   .extend(autonomousAgentEnvSchema.shape)

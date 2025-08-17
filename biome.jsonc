@@ -1,5 +1,22 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "extends": ["ultracite"]
+  "extends": ["ultracite"],
+  "linter": {
+    "rules": {
+      "style": {
+        "useBlockStatements": "off",
+        "noParameterProperties": "off",
+        "useConsistentMemberAccessibility": "off"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off"
+      },
+      "suspicious": {
+        "noConsole": "off"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "off"
+      }
+    }
+  }
 }
-

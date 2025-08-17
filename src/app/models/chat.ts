@@ -1,4 +1,4 @@
-import { Agent } from 'alith';
+import type { Agent } from 'alith';
 
 export class Chat {
   constructor(
@@ -6,5 +6,5 @@ export class Chat {
     public userId: string,
     public gameName: string,
     public agent: Agent
-  ) { }
+  ) {}
 }

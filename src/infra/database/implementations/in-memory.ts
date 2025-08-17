@@ -1,9 +1,11 @@
-import { Chat } from '../../../app/models/chat';
-import { ChatsRepository } from '../repositories/chats';
+/** biome-ignore-all lint/suspicious/useAwait: this is a in-memory database */
+
 import { AutonomousAgent } from '../../../app/models/autonomous-agent';
+import { Chat } from '../../../app/models/chat';
+import type { ChatsRepository } from '../repositories/chats';
 
 export class InMemoryDatabase implements ChatsRepository {
-  private chats: Record<string, Chat> = {};
+  private readonly chats: Record<string, Chat> = {};
 
   async getChat(chatId: string): Promise<Chat | null> {
     const chat = this.chats[chatId];

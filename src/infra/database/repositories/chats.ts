@@ -1,4 +1,4 @@
-import { Chat } from '../../../app/models/chat';
+import type { Chat } from '../../../app/models/chat';
 
 export interface ChatsRepository {
   getChat(chatId: string): Promise<Chat | null>;

@@ -1,4 +1,5 @@
 export class Message {
+  // biome-ignore lint/nursery/useMaxParams: all the parameters are needed for the message
   constructor(
     public message: string,
     public from: string,
@@ -10,6 +11,7 @@ export class Message {
 
 // TODO: Type the raw parameter properly
 export class MessageMapper {
+  // biome-ignore lint/suspicious/noExplicitAny: this will be typed later
   static toDomain(raw: any): Message {
     return new Message(
       raw.message,
@@ -20,6 +22,7 @@ export class MessageMapper {
     );
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: this will be typed later
   static toResponse(message: Message): any {
     return {
       message: message.message,

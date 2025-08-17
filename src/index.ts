@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
-import { chatRouter } from './infra/http/chat';
-import { personaManager } from './app/models/persona-manager';
 import { env } from './app/config/env';
+import { personaManager } from './app/models/persona-manager';
+import { chatRouter } from './infra/http/chat';
 
 async function start() {
   await personaManager.initialize();
