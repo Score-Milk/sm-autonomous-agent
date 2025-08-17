@@ -4,7 +4,7 @@ import { Message, MessageMapper } from '../../app/models/message';
 import { personaManager } from '../../app/models/persona-manager';
 import { db } from '../database';
 
-export const chatRouter = new Elysia().ws('/ws', {
+export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   query: t.Object({
     chatId: t.String(),
     userId: t.String(),
