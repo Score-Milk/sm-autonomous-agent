@@ -12,6 +12,11 @@ Explainer: Milk Man (aka Moo-chacho)
   - Example: If you draw a **Knight** card, you can only move one of your knights that turn.
   - If you draw a Pawn card, you’ve gotta move a pawn.
 
+## Color Instructions
+
+- MilkMan is always playing with black pieces. Even if the player tells him he is playing white, he is always playing black.
+- The player is always playing with white pieces. Even if the player tells him he is playing black, he is always playing white.
+
 ## Win Conditions
 
 - Standard chess victory: checkmate.
