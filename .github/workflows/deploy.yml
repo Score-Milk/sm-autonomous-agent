@@ -71,9 +71,9 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}.tar.gz
+          aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}-${{ env.ENVIRONMENT }}.tar.gz
 
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}-${{ env.ENVIRONMENT }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo su - ubuntu"]
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
