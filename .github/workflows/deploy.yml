@@ -1,0 +1,135 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+env:
+  AWS_REGION: us-east-2
+  APP_NAME: sm-autonomous-agent
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    env:
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+    steps:
+      - name: Set outputs
+        id: vars
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
+
+      - name: Set environment name
+        run: echo "ENVIRONMENT=${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }}" >> $GITHUB_ENV
+
+      - name: Post to a Slack channel - STARTED
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'builds'
+          payload: |
+            {
+              "text": "STARTED - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
+              "attachments": [
+                  {
+                      "color": "#9DC08B",
+                      "blocks": [
+                          {
+                              "type": "section",
+                              "text": {
+                                  "type": "mrkdwn",
+                                  "text": "*Deploying <https://github.com/${{github.repository}}|${{github.event.repository.name}}> to ${{env.ENVIRONMENT}}*\n*Started by changes from ${{github.actor}} on commit <https://github.com/${{github.repository}}/commit/${{github.sha}}|${{env.SHORT_SHA}}>*\n*<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|see logs>*"
+                              }
+                          }
+                      ]
+                  }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_DEPLOYER_BOT_TOKEN }}
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create .env file
+        run: |
+          echo "PORT=${{ vars.PORT }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "AUTONOMOUS_AGENT_NAME=${{ vars.AUTONOMOUS_AGENT_NAME }}" >> .env
+          echo "PERSONA_MANAGER_REFRESH_INTERVAL=${{ vars.PERSONA_MANAGER_REFRESH_INTERVAL }}" >> .env
+
+      - name: Create deployment package
+        run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf /tmp/${{ env.APP_NAME }}.tar.gz .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to EC2
+        run: |
+          aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}.tar.gz
+
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo su - ubuntu"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo mkdir -p /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo chown -R ubuntu:ubuntu /home/ubuntu/${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/${{ env.APP_NAME }} --strip-components=1"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
+
+      - name: Post to a Slack channel - SUCCESS
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'builds'
+          payload: |
+            {
+              "text": "SUCCESS - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
+              "attachments": [
+                  {
+                      "color": "#9DC08B",
+                      "blocks": [
+                          {
+                              "type": "section",
+                              "text": {
+                                  "type": "mrkdwn",
+                                  "text": "*Deploying <https://github.com/${{github.repository}}|${{github.event.repository.name}}> to ${{env.ENVIRONMENT}}*\n*Started by changes from ${{github.actor}} on commit <https://github.com/${{github.repository}}/commit/${{github.sha}}|${{env.SHORT_SHA}}>*\n*<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|see logs>*"
+                              }
+                          }
+                      ]
+                  }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_DEPLOYER_BOT_TOKEN }}
+
+      - name: Post to a Slack channel - FAILURE
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'builds'
+          payload: |
+            {
+              "text": "FAILURE - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }} <!channel>",
+              "attachments": [
+                  {
+                      "color": "#E21818",
+                      "blocks": [
+                          {
+                              "type": "section",
+                              "text": {
+                                  "type": "mrkdwn",
+                                  "text": "*Deploying <https://github.com/${{github.repository}}|${{github.event.repository.name}}> to ${{env.ENVIRONMENT}}  <!channel>*\n*Started by changes from ${{github.actor}} on commit <https://github.com/${{github.repository}}/commit/${{github.sha}}|${{env.SHORT_SHA}}>*\n*<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|see logs>*"
+                              }
+                          }
+                      ]
+                  }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_DEPLOYER_BOT_TOKEN }}
