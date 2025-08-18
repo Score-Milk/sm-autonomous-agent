@@ -13,7 +13,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    environment: ${{ github.ref_name == 'master' && 'prod' || 'dev' }}
     env:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
     steps:
@@ -22,7 +22,7 @@ jobs:
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
 
       - name: Set environment name
-        run: echo "ENVIRONMENT=${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }}" >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=${{ github.ref_name == 'master' && 'PRODUCTION' || 'DEVELOPMENT' }}" >> $GITHUB_ENV
 
       - name: Post to a Slack channel - STARTED
         uses: slackapi/slack-github-action@v1.23.0
