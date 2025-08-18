@@ -5,7 +5,7 @@ import { personaManagerEnvSchema } from './persona-manager';
 
 const baseEnvSchema = z.object({
   // biome-ignore lint/style/noMagicNumbers: constants can be defined here
-  PORT: z.string().transform(Number).default(8080),
+  PORT: z.string().transform(Number).default(1221),
 });
 
 export const envSchema = baseEnvSchema
