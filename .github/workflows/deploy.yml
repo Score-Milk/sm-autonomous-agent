@@ -9,12 +9,13 @@ on:
 env:
   AWS_REGION: us-east-2
   APP_NAME: sm-autonomous-agent
-  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+    env:
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
     steps:
       - name: Set outputs
         id: vars
