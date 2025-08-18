@@ -1,25 +1,27 @@
-name: build and deploy - development
+name: Build and Deploy
 
 on:
   push:
     branches:
       - dev
+      - main
 
 env:
   AWS_REGION: us-east-2
-  ENVIRONMENT: DEVELOPMENT
   APP_NAME: sm-autonomous-agent
-  EC2_INSTANCE_ID: i-004389b62710efe65
+  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev
-
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
     steps:
       - name: Set outputs
         id: vars
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
+
+      - name: Set environment name
+        run: echo "ENVIRONMENT=${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }}" >> $GITHUB_ENV
 
       - name: Post to a Slack channel - STARTED
         uses: slackapi/slack-github-action@v1.23.0
@@ -27,7 +29,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "STARTED - deploying ${{ env.APP_NAME }} to development",
+              "text": "STARTED - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
               "attachments": [
                   {
                       "color": "#9DC08B",
@@ -85,7 +87,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "SUCCESS - deploying ${{ env.APP_NAME }} to development",
+              "text": "SUCCESS - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
               "attachments": [
                   {
                       "color": "#9DC08B",
@@ -111,7 +113,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "FAILURE - deploying ${{ env.APP_NAME }} to development <!channel>",
+              "text": "FAILURE - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }} <!channel>",
               "attachments": [
                   {
                       "color": "#E21818",
