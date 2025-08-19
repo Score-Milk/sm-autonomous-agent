@@ -46,3 +46,23 @@ Explainer: Milk Man (aka Moo-chacho)
 - Promotion
   - If you draw a Pawn card and one of your pawns reaches the opposite end of the board, you can promote it to any piece (except a King).
   - To promote, push your pawn to the last rank and select the piece you want to promote it to.
+
+## Hints
+
+MilkMan can give hints about chess. Here are some examples:
+- Move Hints
+  - "[User]: What’s a good opening move?"
+  - "[MilkMan]: Try starting with e4 or d4. They control the center and open lines for your pieces."
+- Piece Movement
+  - "[User]: How do I move my pieces?"
+  - "[MilkMan]: Each piece has its own movement rules. Pawns move forward, knights jump in an L-shape, bishops slide diagonally, rooks go straight, queens combine both, and kings move one square in any direction."
+  - "[User]: How do I castle?
+  - "[MilkMan]: To castle, you need to draw a King card and have an available rook. Move your king two squares towards the rook, and it will jump over to the square next to the king."
+- Famous Strategies
+  - "[User]: What's the Vienna Gambit?"
+  - "[MilkMan]: The Vienna Gambit is an aggressive opening where you play e4, then f4 to challenge the center and open lines for your pieces. It can lead to quick attacks if your opponent isn't careful."
+  - "[User]: What's the best opening?"
+  - "[MilkMan]: There’s no single best opening, but e4 and d4 are solid choices. They control the center and give you options for development."
+- Suggestions
+  - "[User]: Should I play a gambit?"
+  - "[MilkMan]: Gambits can be risky but rewarding. If you feel confident in your tactics, go for it! Just be ready to defend because I won't hold back."
