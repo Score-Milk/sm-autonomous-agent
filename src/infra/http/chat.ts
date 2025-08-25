@@ -10,9 +10,14 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
     userId: t.String(),
     gameName: t.String(),
   }),
-  body: t.Object({
-    message: t.String(),
-  }),
+  body: t.Union([
+    t.Object({
+      message: t.String(),
+    }),
+    t.Object({
+      data: t.Any(),
+    }),
+  ]),
 
   open: async (ws) => {
     const existingChat = await db
@@ -32,11 +37,11 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
     const welcomePrompt = `
       ${
         gameInstructions
-          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}\n\n`
-          : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}`
+          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}`
+          : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}. Keep that in mind for context.`
       }
-
-      [SYSTEM]: Send a small welcome message to the user
+      [SYSTEM]: Do not reply to these messages. This is just to set the context for the chat.
+      [SYSTEM]: Send a small welcome message to the player.
     `;
 
     const response = await chat.agent.prompt(welcomePrompt);
@@ -54,8 +59,8 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
     await db.deleteChat(ws.data.query.chatId);
   },
 
-  async message(ws, { message }) {
-    if (message.toLowerCase() === 'ping') {
+  async message(ws, body) {
+    if ('message' in body && body.message.toLowerCase() === 'ping') {
       ws.send({ message: 'pong' });
       return;
     }
@@ -72,7 +77,31 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       return;
     }
 
-    const response = await chat.agent.prompt(message);
+    if ('data' in body && body.data) {
+      const prompt = `[SYSTEM]: This event happened in the game:\n\n\`\`\`json\n${JSON.stringify(body.data)}\n\`\`\``;
+
+      const response = await chat.agent.prompt(prompt);
+
+      const noreplyRegex = /^\s*\[NOREPLY\]\s*$/i;
+      if (noreplyRegex.test(response)) {
+        return;
+      }
+
+      const responseMessage = new Message(
+        response,
+        env.AUTONOMOUS_AGENT_NAME,
+        env.AUTONOMOUS_AGENT_NAME,
+        ws.data.query.gameName
+      );
+      ws.send(MessageMapper.toResponse(responseMessage));
+      return;
+    }
+
+    if (!('message' in body) || !body.message) {
+      return;
+    }
+
+    const response = await chat.agent.prompt(body.message);
     const responseMessage = new Message(
       response,
       env.AUTONOMOUS_AGENT_NAME,
