@@ -55,6 +55,11 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   },
 
   async message(ws, { message }) {
+    if (message.toLowerCase() === 'ping') {
+      ws.send({ message: 'pong' });
+      return;
+    }
+
     const chat = await db.getChat(ws.data.query.chatId);
     if (!chat) {
       const chatNotFoundMessage = new Message(
