@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: Add Platform Query Parameter to Chat WebSocket
+# Status: pending
+# Dependencies: 10
+# Priority: medium
+# Description: Modify the WebSocket connection handling in `chat.ts` to accept an optional `platform` string parameter in the connection query.
+# Details:
+This parameter will be used to explicitly specify the operating platform for the agent.
+
+# Test Strategy:
+Manual test by connecting to the WebSocket with and without the `platform` query parameter.

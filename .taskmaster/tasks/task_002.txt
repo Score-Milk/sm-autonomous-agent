@@ -1,0 +1,33 @@
+# Task ID: 2
+# Title: Configure Airtable Environment Variables
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Update `src/app/config/env/index.ts` to define and load new environment variables required for Airtable API access.
+# Details:
+Add `AIRTABLE_API_KEY`, `AIRTABLE_BASE_ID`, `AIRTABLE_PERSONA_TABLE_ID`, `AIRTABLE_GAMES_TABLE_ID`, `AIRTABLE_PLATFORMS_TABLE_ID`. Ensure secure loading from `.env`.
+
+# Test Strategy:
+Write a simple test to confirm environment variables are accessible in the application context.
+
+# Subtasks:
+## 1. Add Airtable environment variables to config [pending]
+### Dependencies: None
+### Description: Define new environment variables for Airtable API access in the environment configuration
+### Details:
+- Add AIRTABLE_API_KEY environment variable
+- Add AIRTABLE_BASE_ID environment variable
+- Update environment variable types and validation
+- Add default values or required flags
+- Update environment documentation
+
+## 2. Update environment validation and error handling [pending]
+### Dependencies: None
+### Description: Add validation for Airtable environment variables and proper error handling
+### Details:
+- Add validation for required Airtable environment variables
+- Implement error handling for missing environment variables
+- Add helpful error messages for configuration issues
+- Update environment loading logic
+- Add environment variable documentation
+
