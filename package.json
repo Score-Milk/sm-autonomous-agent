@@ -8,12 +8,14 @@
     "format": "biome check --write"
   },
   "dependencies": {
+    "airtable": "^0.12.2",
     "alith": "^0.11.1",
     "elysia": "latest",
     "zod": "^4.0.17"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@types/airtable": "^0.10.5",
     "@types/json-schema": "^7.0.15",
     "bun-types": "latest",
     "husky": "^9.1.7",

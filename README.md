@@ -5,45 +5,56 @@ An autonomous agent system built with TypeScript that can engage in conversation
 ## Tools & Technologies
 
 ### Runtime & Framework
+
 - **Bun** - Fast JavaScript runtime and package manager
 - **Elysia** - Ergonomic web framework for Bun
 - **TypeScript** - Type-safe JavaScript development
 
 ### Code Quality & Formatting
+
 - **Biome** - Lightning-fast formatter and linter
 - **Ultracite** - Strict type safety and code quality enforcement
 - **Husky** - Git hooks for automated quality checks
 - **lint-staged** - Run linters on staged files
 
 ### Data & Validation
+
 - **Zod** - Schema validation and type inference
 - **Alith** - AI/LLM integration library
 
 ## Available Scripts
 
 ### Development
+
 ```bash
 bun run dev
 ```
+
 Starts the development server with hot reload watching `src/index.ts`
 
 ### Production
+
 ```bash
 bun run start
 ```
+
 Starts the production server
 
 ### Code Quality
+
 ```bash
 bun run format
 ```
+
 Formats and lints code using Biome with automatic fixes
 
 ### Testing
+
 ```bash
 bun run test
 ```
-*Note: Test suite is not yet implemented*
+
+_Note: Test suite is not yet implemented_
 
 ## Project Structure
 
@@ -58,7 +69,8 @@ src/
 │   │       ├── index.ts       # Main env schema combining all configs
 │   │       ├── alith.ts       # OpenAI API configuration
 │   │       ├── autonomous-agent.ts  # Agent name configuration
-│   │       └── persona-manager.ts   # Persona refresh interval config
+│   │       ├── persona-manager.ts   # Persona refresh interval config
+│   │       └── airtable.ts    # Airtable API configuration
 │   └── models/                # Business logic models
 │       ├── autonomous-agent.ts # Core agent functionality
 │       ├── chat.ts            # Chat management
@@ -83,17 +95,27 @@ src/
 ## Getting Started
 
 1. **Install dependencies**:
+
    ```bash
    bun install
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
+   **Required Environment Variables:**
+   - `AIRTABLE_API_KEY` - Your Airtable API key (starts with "key")
+   - `AIRTABLE_BASE_ID` - Your Airtable base ID (starts with "app")
+   - `AIRTABLE_PERSONA_TABLE_ID` - Persona table ID (starts with "tbl")
+   - `AIRTABLE_GAMES_TABLE_ID` - Games table ID (starts with "tbl")
+   - `AIRTABLE_PLATFORMS_TABLE_ID` - Platforms table ID (starts with "tbl")
+
 3. **Start development server**:
+
    ```bash
    bun run dev
    ```
