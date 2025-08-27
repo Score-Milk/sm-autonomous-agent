@@ -33,5 +33,11 @@
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
-  "cSpell.words": ["alith", "chaoschess", "Elysia", "ultracite"]
+  "cSpell.words": [
+    "Airtable",
+    "alith",
+    "chaoschess",
+    "Elysia",
+    "ultracite"
+  ]
 }
