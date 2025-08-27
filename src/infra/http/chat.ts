@@ -1,8 +1,15 @@
 import Elysia, { t } from 'elysia';
 import { env } from '../../app/config/env';
 import { Message, MessageMapper } from '../../app/models/message';
-import { personaManager } from '../../app/models/persona-manager';
-import { db } from '../database';
+import { PersonaManager } from '../../app/models/persona-manager';
+import { InMemoryDatabase } from '../database/implementations/in-memory';
+import { AirtableProvider } from '../providers/airtable-provider';
+
+const NOREPLY_REGEX = /^\s*\[NOREPLY\]\s*$/i;
+
+const airtableProvider = new AirtableProvider();
+const personaManager = new PersonaManager(airtableProvider);
+const db = new InMemoryDatabase(personaManager);
 
 export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   query: t.Object({
@@ -31,8 +38,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       ws.data.query.gameName
     );
 
-    const gameInstructions =
-      personaManager.gamesInstructions[ws.data.query.gameName];
+    const gameInstructions = personaManager.games[ws.data.query.gameName];
 
     const welcomePrompt = `
       ${
@@ -81,9 +87,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       const prompt = `[SYSTEM]: This event happened in the game:\n\n\`\`\`json\n${JSON.stringify(body.data)}\n\`\`\``;
 
       const response = await chat.agent.prompt(prompt);
-
-      const noreplyRegex = /^\s*\[NOREPLY\]\s*$/i;
-      if (noreplyRegex.test(response)) {
+      if (NOREPLY_REGEX.test(response)) {
         return;
       }
 
@@ -97,7 +101,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       return;
     }
 
-    if (!('message' in body) || !body.message) {
+    if (!('message' in body && body.message)) {
       return;
     }
 

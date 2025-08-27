@@ -2,10 +2,13 @@
 
 import { AutonomousAgent } from '../../../app/models/autonomous-agent';
 import { Chat } from '../../../app/models/chat';
+import type { PersonaManager } from '../../../app/models/persona-manager';
 import type { ChatsRepository } from '../repositories/chats';
 
 export class InMemoryDatabase implements ChatsRepository {
   private readonly chats: Record<string, Chat> = {};
+
+  constructor(private readonly personaManager: PersonaManager) {}
 
   async getChat(chatId: string): Promise<Chat | null> {
     const chat = this.chats[chatId];
@@ -21,7 +24,7 @@ export class InMemoryDatabase implements ChatsRepository {
     userId: string,
     gameName: string
   ): Promise<Chat> {
-    const autonomousAgent = new AutonomousAgent();
+    const autonomousAgent = new AutonomousAgent(this.personaManager);
 
     const chat = new Chat(chatId, userId, gameName, autonomousAgent.agent);
 

@@ -1,7 +1,8 @@
 import { Agent, WindowBufferMemory } from 'alith';
-import { personaManager } from './persona-manager';
+import type { PersonaManager } from './persona-manager';
 
 interface AutonomousAgentOptions {
+  personaName?: string;
   model?: string;
   customContext?: string;
 }
@@ -11,22 +12,34 @@ export class AutonomousAgent {
 
   agent: Agent;
 
-  constructor(options: AutonomousAgentOptions = {}) {
+  constructor(
+    private readonly personaManager: PersonaManager,
+    options: AutonomousAgentOptions = {}
+  ) {
     this.agent = this.createAgent(options);
   }
 
-  private createAgent(_options: AutonomousAgentOptions): Agent {
-    const options: AutonomousAgentOptions = {
+  private createAgent(options: AutonomousAgentOptions): Agent {
+    const optionsWithDefaults: AutonomousAgentOptions = {
       model: AutonomousAgent.DEFAULT_AGENT_MODEL,
       customContext: '',
-      ..._options,
+      ...options,
     };
+    if (!optionsWithDefaults.personaName) {
+      optionsWithDefaults.personaName = 'MilkMan';
+    }
+
+    const firstPersonaTemplate = Object.values(this.personaManager.personas)[0];
+    const personaTemplate =
+      this.personaManager.personas[optionsWithDefaults.personaName] ??
+      firstPersonaTemplate;
 
     return new Agent({
-      model: options.model,
-      preamble: `${personaManager.personaTemplate} ${
-        options.customContext || ''
-      }`,
+      model: optionsWithDefaults.model,
+      preamble: `
+        ${personaTemplate}
+        ${optionsWithDefaults.customContext || ''}
+      `,
       memory: new WindowBufferMemory(),
     });
   }

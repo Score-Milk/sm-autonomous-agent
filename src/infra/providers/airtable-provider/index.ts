@@ -1,6 +1,7 @@
 import Airtable from 'airtable';
 import type { QueryParams } from 'airtable/lib/query_params';
 import { env } from '../../../app/config/env';
+import type { PersonaLoader } from '../../../app/models/persona-manager/types';
 import { SimpleCache } from '../../../app/utils/cache';
 import { withRetry } from '../../../app/utils/retry';
 import type {
@@ -20,7 +21,7 @@ import {
   platformsArraySchema,
 } from './schemas';
 
-export class AirtableProvider {
+export class AirtableProvider implements PersonaLoader {
   private readonly airtable: Airtable;
   private readonly base: Airtable.Base;
   private readonly cache: SimpleCache;
@@ -39,9 +40,9 @@ export class AirtableProvider {
   }
 
   /**
-   * Generic method to fetch records from any table with error handling
+   * Generic method to get records from any table with error handling
    */
-  async fetchRecords<T = Record<string, unknown>>(
+  async getRecords<T = Record<string, unknown>>(
     tableId: string,
     params: QueryParams<Airtable.FieldSet> = {}
   ): Promise<T[]> {
@@ -54,25 +55,25 @@ export class AirtableProvider {
         id: record.id,
         ...record.fields,
       })) as T[];
-    }, `fetchRecords from table ${tableId}`);
+    }, `getRecords from table ${tableId}`);
 
     if (!result) {
-      throw new Error(`Failed to fetch records from table ${tableId}`);
+      throw new Error(`Failed to get records from table ${tableId}`);
     }
 
     return result;
   }
 
   /**
-   * Fetch persona data from the Personas table
+   * get persona data from the Personas table
    */
-  async fetchPersonas(): Promise<Persona[]> {
+  async getPersonas(): Promise<Persona[]> {
     const cacheKey = 'airtable-personas';
     const cached = this.cache.get<Persona[]>(cacheKey);
     if (cached) return cached;
 
     try {
-      const records = await this.fetchRecords<AirtablePersonaRecord>(
+      const records = await this.getRecords<AirtablePersonaRecord>(
         env.AIRTABLE_PERSONA_TABLE_ID,
         {
           filterByFormula: '{Is Active} = 1',
@@ -96,24 +97,24 @@ export class AirtableProvider {
       this.cache.set(cacheKey, validatedResult);
       return validatedResult;
     } catch (error) {
-      console.error('Failed to fetch personas from Airtable:', error);
+      console.error('Failed to get personas from Airtable:', error);
 
       throw new Error(
-        `Failed to fetch personas: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get personas: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
 
   /**
-   * Fetch games data from the Games table
+   * get games data from the Games table
    */
-  async fetchGames(): Promise<Game[]> {
+  async getGames(): Promise<Game[]> {
     const cacheKey = 'airtable-games';
     const cached = this.cache.get<Game[]>(cacheKey);
     if (cached) return cached;
 
     try {
-      const records = await this.fetchRecords<AirtableGameRecord>(
+      const records = await this.getRecords<AirtableGameRecord>(
         env.AIRTABLE_GAMES_TABLE_ID,
         {
           filterByFormula: '{Is Active} = 1',
@@ -137,24 +138,24 @@ export class AirtableProvider {
       this.cache.set(cacheKey, validatedResult);
       return validatedResult;
     } catch (error) {
-      console.error('Failed to fetch games from Airtable:', error);
+      console.error('Failed to get games from Airtable:', error);
 
       throw new Error(
-        `Failed to fetch games: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get games: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
 
   /**
-   * Fetch platforms data from the Platforms table
+   * get platforms data from the Platforms table
    */
-  async fetchPlatforms(): Promise<Platform[]> {
+  async getPlatforms(): Promise<Platform[]> {
     const cacheKey = 'airtable-platforms';
     const cached = this.cache.get<Platform[]>(cacheKey);
     if (cached) return cached;
 
     try {
-      const records = await this.fetchRecords<AirtablePlatformRecord>(
+      const records = await this.getRecords<AirtablePlatformRecord>(
         env.AIRTABLE_PLATFORMS_TABLE_ID,
         {
           filterByFormula: '{Is Active} = 1',
@@ -178,10 +179,10 @@ export class AirtableProvider {
       this.cache.set(cacheKey, validatedResult);
       return validatedResult;
     } catch (error) {
-      console.error('Failed to fetch platforms from Airtable:', error);
+      console.error('Failed to get platforms from Airtable:', error);
 
       throw new Error(
-        `Failed to fetch platforms: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get platforms: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
