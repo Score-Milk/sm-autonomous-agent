@@ -1,6 +1,6 @@
 # Task ID: 8
 # Title: Integrate Airtable Game Instructions into PersonaManager
-# Status: pending
+# Status: done
 # Dependencies: 5
 # Priority: high
 # Description: Replace the existing `fetchChaosChessInstructions` with a new `fetchGamesInstructions` method in `PersonaManager` to load all game records from the `Games` table via `AirtableProvider`.

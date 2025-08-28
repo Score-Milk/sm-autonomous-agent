@@ -1,6 +1,6 @@
 # Task ID: 4
 # Title: Implement AirtableProvider Persona Fetching
-# Status: pending
+# Status: done
 # Dependencies: 3
 # Priority: high
 # Description: Add a method to `AirtableProvider` to fetch records from the `Agent Personas` table in Airtable.

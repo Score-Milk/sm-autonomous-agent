@@ -1,6 +1,6 @@
 # Task ID: 6
 # Title: Implement AirtableProvider Platform Data Fetching
-# Status: pending
+# Status: done
 # Dependencies: 3
 # Priority: high
 # Description: Add a method to `AirtableProvider` to fetch records from the `Platforms` table in Airtable.

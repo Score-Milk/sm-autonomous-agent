@@ -1,6 +1,6 @@
 # Task ID: 1
 # Title: Add Airtable package
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Add the `airtable` npm package to the project's `package.json` dependencies.
@@ -11,7 +11,7 @@ Execute `npm install airtable` or `yarn add airtable`.
 Verify `airtable` entry exists in `package.json` and `node_modules`.
 
 # Subtasks:
-## 1. Install airtable npm package [pending]
+## 1. Install airtable npm package [done]
 ### Dependencies: None
 ### Description: Add the airtable package to project dependencies
 ### Details:
@@ -20,7 +20,7 @@ Verify `airtable` entry exists in `package.json` and `node_modules`.
 - Check for any peer dependencies
 - Update package-lock.json
 
-## 2. Verify package installation and compatibility [pending]
+## 2. Verify package installation and compatibility [done]
 ### Dependencies: None
 ### Description: Ensure the airtable package is properly installed and compatible with the project
 ### Details:
