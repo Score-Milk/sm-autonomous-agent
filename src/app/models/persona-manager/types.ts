@@ -3,9 +3,6 @@ export interface Persona {
   name: string;
   description: string;
   template: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Game {
@@ -13,9 +10,6 @@ export interface Game {
   name: string;
   description: string;
   instructions: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Platform {
@@ -23,9 +17,6 @@ export interface Platform {
   name: string;
   description: string;
   url: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PersonaLoader {
