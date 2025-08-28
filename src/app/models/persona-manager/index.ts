@@ -1,11 +1,13 @@
 import { env } from '../../config/env';
-import type { Game, Persona, PersonaLoader } from './types';
+import { normalizeUrl } from '../../utils/url';
+import type { Game, Persona, PersonaLoader, Platform } from './types';
 
 export class PersonaManager {
   private refreshInterval: NodeJS.Timeout | null = null;
 
   public personas: Record<Persona['name'], string> = {};
   public games: Record<Game['name'], string> = {};
+  public platforms: Record<string, Platform> = {};
 
   constructor(private readonly personaLoader: PersonaLoader) {}
 
@@ -56,6 +58,32 @@ export class PersonaManager {
       }, this.games);
     } catch (error) {
       console.error('Failed to refresh games instructions:', error);
+    }
+
+    try {
+      const platforms = await this.personaLoader.getPlatforms();
+      this.platforms = platforms.reduce((acc, platform) => {
+        if (!platform.url) {
+          console.warn(`Platform ${platform.name} has no URL, skipping`);
+          return acc;
+        }
+
+        try {
+          const normalizedUrl = normalizeUrl(platform.url);
+          if (normalizedUrl) {
+            acc[normalizedUrl] = platform;
+          }
+        } catch (error) {
+          console.warn(
+            `Invalid URL for platform ${platform.name}: ${platform.url}`,
+            error
+          );
+        }
+
+        return acc;
+      }, this.platforms);
+    } catch (error) {
+      console.error('Failed to refresh platform data:', error);
     }
   }
 }
