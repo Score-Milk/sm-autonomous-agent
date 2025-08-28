@@ -8,8 +8,6 @@ export const personaSchema = z
     Description: z.string().optional(),
     Template: z.string().optional(),
     'Is Active': z.boolean().optional(),
-    'Created At': z.string().optional(),
-    'Updated At': z.string().optional(),
   })
   .transform((persona) => ({
     id: persona.id,
@@ -17,8 +15,6 @@ export const personaSchema = z
     description: persona.Description || '',
     template: persona.Template || '',
     isActive: persona['Is Active'] ?? true,
-    createdAt: persona['Created At'] || '',
-    updatedAt: persona['Updated At'] || '',
   }));
 export const personasArraySchema = z.array(personaSchema);
 
@@ -30,20 +26,18 @@ export const gameSchema = z
   .object({
     id: z.string(),
     Name: z.string().optional(),
+    Alias: z.string().optional(),
     Description: z.string().optional(),
     Instructions: z.string().optional(),
     'Is Active': z.boolean().optional(),
-    'Created At': z.string().optional(),
-    'Updated At': z.string().optional(),
   })
   .transform((game) => ({
     id: game.id,
     name: game.Name || '',
+    alias: game.Alias || '',
     description: game.Description || '',
     instructions: game.Instructions || '',
     isActive: game['Is Active'] ?? true,
-    createdAt: game['Created At'] || '',
-    updatedAt: game['Updated At'] || '',
   }));
 export const gamesArraySchema = z.array(gameSchema);
 
@@ -58,8 +52,6 @@ export const platformSchema = z
     Description: z.string().optional(),
     URL: z.string().optional(),
     'Is Active': z.boolean().optional(),
-    'Created At': z.string().optional(),
-    'Updated At': z.string().optional(),
   })
   .transform((platform) => ({
     id: platform.id,
@@ -67,8 +59,6 @@ export const platformSchema = z
     description: platform.Description || '',
     url: platform.URL || '',
     isActive: platform['Is Active'] ?? true,
-    createdAt: platform['Created At'] || '',
-    updatedAt: platform['Updated At'] || '',
   }));
 export const platformsArraySchema = z.array(platformSchema);
 

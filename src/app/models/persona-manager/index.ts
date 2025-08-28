@@ -53,7 +53,7 @@ export class PersonaManager {
     try {
       const games = await this.personaLoader.getGames();
       this.games = games.reduce((acc, game) => {
-        acc[game.name] = game.instructions;
+        acc[game.alias] = game.instructions;
         return acc;
       }, this.games);
     } catch (error) {

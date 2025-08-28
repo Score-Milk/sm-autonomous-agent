@@ -8,6 +8,7 @@ export interface Persona {
 export interface Game {
   id: string;
   name: string;
+  alias: string;
   description: string;
   instructions: string;
 }
