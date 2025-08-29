@@ -2,6 +2,7 @@ import Elysia, { t } from 'elysia';
 import { env } from '../../app/config/env';
 import { Message, MessageMapper } from '../../app/models/message';
 import { PersonaManager } from '../../app/models/persona-manager';
+import { detectPlatform } from '../../app/utils/platform';
 import { InMemoryDatabase } from '../database/implementations/in-memory';
 import { AirtableProvider } from '../providers/airtable-provider';
 
@@ -16,6 +17,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
     chatId: t.String(),
     userId: t.String(),
     gameName: t.String(),
+    platform: t.Optional(t.String()),
   }),
   body: t.Union([
     t.Object({
@@ -27,6 +29,25 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   ]),
 
   open: async (ws) => {
+    const { isValid, error } = detectPlatform(
+      Object.values(personaManager.platforms),
+      {
+        query: ws.data.query,
+        headers: ws.data.headers,
+      }
+    );
+
+    if (!isValid && error) {
+      const errorMessage = new Message(
+        `Connection rejected: ${error}`,
+        'System',
+        'System',
+        ws.data.query.gameName
+      );
+      ws.send(MessageMapper.toResponse(errorMessage));
+      return;
+    }
+
     const existingChat = await db
       .getChat(ws.data.query.chatId)
       .catch(() => null);
@@ -38,14 +59,15 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       ws.data.query.gameName
     );
 
-    const gameInstructions = personaManager.games[ws.data.query.gameName];
+    const game = personaManager.games[ws.data.query.gameName];
 
     const welcomePrompt = `
       ${
-        gameInstructions
-          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}`
+        game
+          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${game.instructions}`
           : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}. Keep that in mind for context.`
       }
+
       [SYSTEM]: Do not reply to these messages. This is just to set the context for the chat.
       [SYSTEM]: Send a small welcome message to the player.
     `;

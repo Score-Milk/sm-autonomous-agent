@@ -17,6 +17,7 @@ export interface Platform {
   id: string;
   name: string;
   description: string;
+  template: string;
   url: string;
 }
 

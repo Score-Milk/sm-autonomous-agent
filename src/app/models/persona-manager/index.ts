@@ -5,11 +5,13 @@ import type { Game, Persona, PersonaLoader, Platform } from './types';
 export class PersonaManager {
   private refreshInterval: NodeJS.Timeout | null = null;
 
-  public personas: Record<Persona['name'], string> = {};
-  public games: Record<Game['name'], string> = {};
+  public personas: Record<Persona['name'], Persona> = {};
+  public games: Record<Game['alias'], Game> = {};
   public platforms: Record<string, Platform> = {};
 
-  constructor(private readonly personaLoader: PersonaLoader) {}
+  constructor(private readonly personaLoader: PersonaLoader) {
+    this.initialize();
+  }
 
   async initialize(): Promise<void> {
     await this.setup();
@@ -37,15 +39,13 @@ export class PersonaManager {
       const personasTemplates = await this.personaLoader.getPersonas();
 
       this.personas = personasTemplates.reduce((acc, persona) => {
-        acc[persona.name] = `
-          ${persona.template}
-
-          Always respond in character, as ${persona.name}.
-          You may receive a message beginning with "[SYSTEM]:" at any time. This is a system message, treat it as such. It will provide context or command an action, behave accordingly.
-          If you should not or don't want to reply to a message, respond with "[NOREPLY]".
-        `;
+        acc[persona.name] = persona;
         return acc;
       }, this.personas);
+
+      console.log(
+        `Refreshed ${Object.keys(this.personas).length} persona templates`
+      );
     } catch (error) {
       console.error('Failed to refresh persona template:', error);
     }
@@ -53,9 +53,12 @@ export class PersonaManager {
     try {
       const games = await this.personaLoader.getGames();
       this.games = games.reduce((acc, game) => {
-        acc[game.alias] = game.instructions;
+        acc[game.alias] = game;
         return acc;
       }, this.games);
+      console.log(
+        `Refreshed ${Object.keys(this.games).length} games instructions`
+      );
     } catch (error) {
       console.error('Failed to refresh games instructions:', error);
     }
@@ -70,9 +73,14 @@ export class PersonaManager {
 
         try {
           const normalizedUrl = normalizeUrl(platform.url);
-          if (normalizedUrl) {
-            acc[normalizedUrl] = platform;
+          if (!normalizedUrl) {
+            console.warn(
+              `Platform ${platform.name} has invalid URL (${platform.url}), skipping`
+            );
+            return acc;
           }
+
+          acc[normalizedUrl] = platform;
         } catch (error) {
           console.warn(
             `Invalid URL for platform ${platform.name}: ${platform.url}`,
@@ -82,6 +90,7 @@ export class PersonaManager {
 
         return acc;
       }, this.platforms);
+      console.log(`Refreshed ${Object.keys(this.platforms).length} platforms`);
     } catch (error) {
       console.error('Failed to refresh platform data:', error);
     }

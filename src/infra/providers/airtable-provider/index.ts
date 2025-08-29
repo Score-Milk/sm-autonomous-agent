@@ -12,14 +12,7 @@ import type {
   Persona,
   Platform,
 } from './schemas';
-import {
-  gameSchema,
-  gamesArraySchema,
-  personaSchema,
-  personasArraySchema,
-  platformSchema,
-  platformsArraySchema,
-} from './schemas';
+import { gameSchema, personaSchema, platformSchema } from './schemas';
 
 export class AirtableProvider implements PersonaLoader {
   private readonly airtable: Airtable;
@@ -91,11 +84,10 @@ export class AirtableProvider implements PersonaLoader {
 
           return persona.data;
         })
-        .filter(Boolean);
+        .filter(Boolean) as ReturnType<(typeof personaSchema)['parse']>[];
 
-      const validatedResult = personasArraySchema.parse(validatedRecords);
-      this.cache.set(cacheKey, validatedResult);
-      return validatedResult;
+      this.cache.set(cacheKey, validatedRecords);
+      return validatedRecords;
     } catch (error) {
       console.error('Failed to get personas from Airtable:', error);
 
@@ -132,11 +124,10 @@ export class AirtableProvider implements PersonaLoader {
 
           return game.data;
         })
-        .filter(Boolean);
+        .filter(Boolean) as ReturnType<(typeof gameSchema)['parse']>[];
 
-      const validatedResult = gamesArraySchema.parse(validatedRecords);
-      this.cache.set(cacheKey, validatedResult);
-      return validatedResult;
+      this.cache.set(cacheKey, validatedRecords);
+      return validatedRecords;
     } catch (error) {
       console.error('Failed to get games from Airtable:', error);
 
@@ -173,11 +164,10 @@ export class AirtableProvider implements PersonaLoader {
 
           return platform.data;
         })
-        .filter(Boolean);
+        .filter(Boolean) as ReturnType<(typeof platformSchema)['parse']>[];
 
-      const validatedResult = platformsArraySchema.parse(validatedRecords);
-      this.cache.set(cacheKey, validatedResult);
-      return validatedResult;
+      this.cache.set(cacheKey, validatedRecords);
+      return validatedRecords;
     } catch (error) {
       console.error('Failed to get platforms from Airtable:', error);
 

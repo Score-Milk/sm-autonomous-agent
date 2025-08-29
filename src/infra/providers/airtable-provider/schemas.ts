@@ -16,7 +16,6 @@ export const personaSchema = z
     template: persona.Template || '',
     isActive: persona['Is Active'] ?? true,
   }));
-export const personasArraySchema = z.array(personaSchema);
 
 export type AirtablePersonaRecord = z.input<typeof personaSchema>;
 export type Persona = z.infer<typeof personaSchema>;
@@ -39,7 +38,6 @@ export const gameSchema = z
     instructions: game.Instructions || '',
     isActive: game['Is Active'] ?? true,
   }));
-export const gamesArraySchema = z.array(gameSchema);
 
 export type AirtableGameRecord = z.input<typeof gameSchema>;
 export type Game = z.infer<typeof gameSchema>;
@@ -50,6 +48,7 @@ export const platformSchema = z
     id: z.string(),
     Name: z.string().optional(),
     Description: z.string().optional(),
+    Template: z.string().optional(),
     URL: z.string().optional(),
     'Is Active': z.boolean().optional(),
   })
@@ -57,10 +56,10 @@ export const platformSchema = z
     id: platform.id,
     name: platform.Name || '',
     description: platform.Description || '',
+    template: platform.Template || '',
     url: platform.URL || '',
     isActive: platform['Is Active'] ?? true,
   }));
-export const platformsArraySchema = z.array(platformSchema);
 
 export type AirtablePlatformRecord = z.input<typeof platformSchema>;
 export type Platform = z.infer<typeof platformSchema>;

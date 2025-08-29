@@ -1,7 +1,7 @@
 import z from 'zod';
 
 // Airtable ID regex patterns
-const AIRTABLE_API_KEY_REGEX = /^key[A-Za-z0-9]{17}$/;
+const AIRTABLE_API_KEY_REGEX = /^pat[A-Za-z0-9.]{79}$/;
 const AIRTABLE_BASE_ID_REGEX = /^app[A-Za-z0-9]{14}$/;
 const AIRTABLE_TABLE_ID_REGEX = /^tbl[A-Za-z0-9]{14}$/;
 
@@ -11,7 +11,7 @@ const airtableApiKeySchema = z
   .min(1, 'AIRTABLE_API_KEY is required for Airtable API access')
   .regex(
     AIRTABLE_API_KEY_REGEX,
-    'AIRTABLE_API_KEY must be a valid Airtable API key format (starts with "key" followed by 17 characters)'
+    'AIRTABLE_API_KEY must be a valid Airtable Personal Access Token format (starts with "pat" followed by 79 characters, can contain dots)'
   );
 
 const airtableBaseIdSchema = z
