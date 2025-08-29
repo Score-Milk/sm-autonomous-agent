@@ -116,7 +116,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       return;
     }
 
-    if (!('message' in body && body.message)) {
+    if (!('message' in body) || !body.message.trim()) {
       return;
     }
 
