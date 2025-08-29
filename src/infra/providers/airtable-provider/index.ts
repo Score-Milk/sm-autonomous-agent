@@ -1,20 +1,24 @@
 import Airtable from 'airtable';
 import type { QueryParams } from 'airtable/lib/query_params';
 import { env } from '../../../app/config/env';
-import type { PersonaLoader } from '../../../app/models/persona-manager/types';
+import type {
+  Game,
+  Persona,
+  PersonaLoader,
+  Platform,
+} from '../../../app/models/persona-manager/types';
 import { SimpleCache } from '../../../app/utils/cache';
 import { withRetry } from '../../../app/utils/retry';
+import { normalizeUrl } from '../../../app/utils/url';
+import type { PersonasRepository } from '../../database/repositories/personas';
 import type {
   AirtableGameRecord,
   AirtablePersonaRecord,
   AirtablePlatformRecord,
-  Game,
-  Persona,
-  Platform,
 } from './schemas';
 import { gameSchema, personaSchema, platformSchema } from './schemas';
 
-export class AirtableProvider implements PersonaLoader {
+export class AirtableProvider implements PersonaLoader, PersonasRepository {
   private readonly airtable: Airtable;
   private readonly base: Airtable.Base;
   private readonly cache: SimpleCache;
@@ -25,9 +29,6 @@ export class AirtableProvider implements PersonaLoader {
     this.cache = new SimpleCache();
   }
 
-  /**
-   * Get a specific table by ID
-   */
   getTable(tableId: string) {
     return this.base.table(tableId);
   }
@@ -57,9 +58,6 @@ export class AirtableProvider implements PersonaLoader {
     return result;
   }
 
-  /**
-   * get persona data from the Personas table
-   */
   async getPersonas(): Promise<Persona[]> {
     const cacheKey = 'airtable-personas';
     const cached = this.cache.get<Persona[]>(cacheKey);
@@ -87,6 +85,16 @@ export class AirtableProvider implements PersonaLoader {
         .filter(Boolean) as ReturnType<(typeof personaSchema)['parse']>[];
 
       this.cache.set(cacheKey, validatedRecords);
+
+      const personaMap = validatedRecords.reduce<Record<string, Persona>>(
+        (acc, persona) => {
+          acc[persona.name] = persona;
+          return acc;
+        },
+        {}
+      );
+      this.cache.set('personas-by-name', personaMap);
+
       return validatedRecords;
     } catch (error) {
       console.error('Failed to get personas from Airtable:', error);
@@ -97,9 +105,16 @@ export class AirtableProvider implements PersonaLoader {
     }
   }
 
-  /**
-   * get games data from the Games table
-   */
+  async getPersonaByName(name: string): Promise<Persona | undefined> {
+    let personaMap =
+      this.cache.get<Record<string, Persona>>('personas-by-name');
+    if (!personaMap) {
+      await this.getPersonas();
+      personaMap = this.cache.get<Record<string, Persona>>('personas-by-name');
+    }
+    return personaMap?.[name];
+  }
+
   async getGames(): Promise<Game[]> {
     const cacheKey = 'airtable-games';
     const cached = this.cache.get<Game[]>(cacheKey);
@@ -127,6 +142,16 @@ export class AirtableProvider implements PersonaLoader {
         .filter(Boolean) as ReturnType<(typeof gameSchema)['parse']>[];
 
       this.cache.set(cacheKey, validatedRecords);
+
+      const gameMap = validatedRecords.reduce<Record<string, Game>>(
+        (acc, game) => {
+          acc[game.alias] = game;
+          return acc;
+        },
+        {}
+      );
+      this.cache.set('games-by-alias', gameMap);
+
       return validatedRecords;
     } catch (error) {
       console.error('Failed to get games from Airtable:', error);
@@ -137,9 +162,15 @@ export class AirtableProvider implements PersonaLoader {
     }
   }
 
-  /**
-   * get platforms data from the Platforms table
-   */
+  async getGameByAlias(alias: string): Promise<Game | undefined> {
+    let gameMap = this.cache.get<Record<string, Game>>('games-by-alias');
+    if (!gameMap) {
+      await this.getGames();
+      gameMap = this.cache.get<Record<string, Game>>('games-by-alias');
+    }
+    return gameMap?.[alias];
+  }
+
   async getPlatforms(): Promise<Platform[]> {
     const cacheKey = 'airtable-platforms';
     const cached = this.cache.get<Platform[]>(cacheKey);
@@ -167,6 +198,29 @@ export class AirtableProvider implements PersonaLoader {
         .filter(Boolean) as ReturnType<(typeof platformSchema)['parse']>[];
 
       this.cache.set(cacheKey, validatedRecords);
+
+      const platformMap = validatedRecords.reduce<Record<string, Platform>>(
+        (acc, platform) => {
+          if (!platform.url) return acc;
+
+          try {
+            const normalizedUrl = normalizeUrl(platform.url);
+            if (!normalizedUrl) return acc;
+
+            acc[normalizedUrl] = platform;
+          } catch (error) {
+            console.warn(
+              `Invalid URL for platform "${platform.name}": ${platform.url}`,
+              error
+            );
+          }
+
+          return acc;
+        },
+        {}
+      );
+      this.cache.set('platforms-by-url', platformMap);
+
       return validatedRecords;
     } catch (error) {
       console.error('Failed to get platforms from Airtable:', error);
@@ -177,9 +231,38 @@ export class AirtableProvider implements PersonaLoader {
     }
   }
 
-  /**
-   * Clear all cached data
-   */
+  async getPlatformByUrl(url: string): Promise<Platform | undefined> {
+    let platformMap =
+      this.cache.get<Record<string, Platform>>('platforms-by-url');
+    if (!platformMap) {
+      await this.getPlatforms();
+      platformMap =
+        this.cache.get<Record<string, Platform>>('platforms-by-url');
+    }
+
+    try {
+      const normalizedUrl = normalizeUrl(url);
+      if (!normalizedUrl) return;
+
+      return platformMap?.[normalizedUrl];
+    } catch (error) {
+      console.warn(`Invalid URL for platform lookup: ${url}`, error);
+      return;
+    }
+  }
+
+  async refreshData(): Promise<void> {
+    this.invalidateCache();
+
+    await Promise.all([
+      this.getPersonas(),
+      this.getGames(),
+      this.getPlatforms(),
+    ]);
+
+    console.log('AirtableProvider refreshed all data');
+  }
+
   invalidateCache(key?: string) {
     if (key) {
       this.cache.delete(key);
