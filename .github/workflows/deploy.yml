@@ -59,6 +59,13 @@ jobs:
           echo "AUTONOMOUS_AGENT_NAME=${{ vars.AUTONOMOUS_AGENT_NAME }}" >> .env
           echo "PERSONA_MANAGER_REFRESH_INTERVAL=${{ vars.PERSONA_MANAGER_REFRESH_INTERVAL }}" >> .env
 
+          # Airtable configuration
+          echo "AIRTABLE_API_KEY=${{ secrets.AIRTABLE_API_KEY }}" >> .env
+          echo "AIRTABLE_BASE_ID=${{ secrets.AIRTABLE_BASE_ID }}" >> .env
+          echo "AIRTABLE_PERSONA_TABLE_ID=${{ secrets.AIRTABLE_PERSONA_TABLE_ID }}" >> .env
+          echo "AIRTABLE_GAMES_TABLE_ID=${{ secrets.AIRTABLE_GAMES_TABLE_ID }}" >> .env
+          echo "AIRTABLE_PLATFORMS_TABLE_ID=${{ secrets.AIRTABLE_PLATFORMS_TABLE_ID }}" >> .env
+
       - name: Create deployment package
         run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf /tmp/${{ env.APP_NAME }}.tar.gz .
 

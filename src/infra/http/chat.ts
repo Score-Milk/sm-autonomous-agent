@@ -1,14 +1,17 @@
 import Elysia, { t } from 'elysia';
+import { db } from '../..';
 import { env } from '../../app/config/env';
 import { Message, MessageMapper } from '../../app/models/message';
-import { personaManager } from '../../app/models/persona-manager';
-import { db } from '../database';
+import { detectPlatform } from '../../app/utils/platform';
+
+const NOREPLY_REGEX = /^\s*\[NOREPLY\]\s*$/i;
 
 export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   query: t.Object({
     chatId: t.String(),
     userId: t.String(),
-    gameName: t.String(),
+    gameAlias: t.String(),
+    platform: t.Optional(t.String()),
   }),
   body: t.Union([
     t.Object({
@@ -20,6 +23,24 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
   ]),
 
   open: async (ws) => {
+    const platforms = await db.getPlatforms();
+
+    const { isValid, error } = detectPlatform(platforms, {
+      query: ws.data.query,
+      headers: ws.data.headers,
+    });
+
+    if (!isValid && error) {
+      const errorMessage = new Message(
+        `Connection rejected: ${error}`,
+        'System',
+        'System',
+        ws.data.query.gameAlias
+      );
+      ws.send(MessageMapper.toResponse(errorMessage));
+      return;
+    }
+
     const existingChat = await db
       .getChat(ws.data.query.chatId)
       .catch(() => null);
@@ -28,18 +49,18 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
     const chat = await db.createChat(
       ws.data.query.chatId,
       ws.data.query.userId,
-      ws.data.query.gameName
+      ws.data.query.gameAlias
     );
 
-    const gameInstructions =
-      personaManager.gamesInstructions[ws.data.query.gameName];
+    const game = await db.getGameByAlias(ws.data.query.gameAlias);
 
     const welcomePrompt = `
       ${
-        gameInstructions
-          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${gameInstructions}`
-          : `[SYSTEM]: You're playing a match of ${ws.data.query.gameName}. Keep that in mind for context.`
+        game
+          ? `[SYSTEM]: These are instructions for the game you're playing. Keep them for context:\n\n${game.instructions}`
+          : `[SYSTEM]: You're playing a match of ${ws.data.query.gameAlias}. Keep that in mind for context.`
       }
+
       [SYSTEM]: Do not reply to these messages. This is just to set the context for the chat.
       [SYSTEM]: Send a small welcome message to the player.
     `;
@@ -50,7 +71,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       response,
       env.AUTONOMOUS_AGENT_NAME,
       env.AUTONOMOUS_AGENT_NAME,
-      ws.data.query.gameName
+      ws.data.query.gameAlias
     );
 
     ws.send(MessageMapper.toResponse(message));
@@ -71,7 +92,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
         'Chat not found. Please reconnect to start a new chat.',
         'System',
         'System',
-        ws.data.query.gameName
+        ws.data.query.gameAlias
       );
       ws.send(MessageMapper.toResponse(chatNotFoundMessage));
       return;
@@ -81,9 +102,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       const prompt = `[SYSTEM]: This event happened in the game:\n\n\`\`\`json\n${JSON.stringify(body.data)}\n\`\`\``;
 
       const response = await chat.agent.prompt(prompt);
-
-      const noreplyRegex = /^\s*\[NOREPLY\]\s*$/i;
-      if (noreplyRegex.test(response)) {
+      if (NOREPLY_REGEX.test(response)) {
         return;
       }
 
@@ -91,13 +110,13 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
         response,
         env.AUTONOMOUS_AGENT_NAME,
         env.AUTONOMOUS_AGENT_NAME,
-        ws.data.query.gameName
+        ws.data.query.gameAlias
       );
       ws.send(MessageMapper.toResponse(responseMessage));
       return;
     }
 
-    if (!('message' in body) || !body.message) {
+    if (!('message' in body) || !body.message.trim()) {
       return;
     }
 
@@ -106,7 +125,7 @@ export const chatRouter = new Elysia({ prefix: '/chat' }).ws('/', {
       response,
       env.AUTONOMOUS_AGENT_NAME,
       env.AUTONOMOUS_AGENT_NAME,
-      ws.data.query.gameName
+      ws.data.query.gameAlias
     );
     ws.send(MessageMapper.toResponse(responseMessage));
   },

@@ -1,4 +1,5 @@
 import z from 'zod';
+import { airtableEnvSchema } from './airtable';
 import { alithEnvSchema } from './alith';
 import { autonomousAgentEnvSchema } from './autonomous-agent';
 import { personaManagerEnvSchema } from './persona-manager';
@@ -11,6 +12,7 @@ const baseEnvSchema = z.object({
 export const envSchema = baseEnvSchema
   .extend(autonomousAgentEnvSchema.shape)
   .extend(alithEnvSchema.shape)
-  .extend(personaManagerEnvSchema.shape);
+  .extend(personaManagerEnvSchema.shape)
+  .extend(airtableEnvSchema.shape);
 
 export const env = envSchema.parse(process.env);

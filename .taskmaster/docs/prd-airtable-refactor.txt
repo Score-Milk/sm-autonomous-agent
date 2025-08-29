@@ -1,0 +1,111 @@
+<context>
+
+# Overview
+This document outlines the plan to refactor the existing `PersonaManager` to fetch persona, game instructions, and platforms description from an external Airtable base instead of local text files. This change will allow for dynamic updates to the agent's persona and game rules without requiring a full application deployment, providing greater flexibility and easier content management.
+
+# Core Features
+- **Platform Context Awareness:** The agent will be aware of the platform it's operating on (e.g., "Score Milk"). This context will be determined from the initial connection and injected into the agent's persona, allowing for platform-specific interactions.
+- **Airtable Integration:** Replace the file-system-based content loading with a new module that fetches data from the Airtable API.
+- **Remote Persona Management:** The main persona template will be fetched from a specified table in Airtable.
+- **Remote Game Instructions:** Instructions for games (e.g., Chaos Chess) will be fetched from a separate table in the same Airtable base.
+- **Remote Platform Data:** Information about platforms (e.g., "Score Milk") will be fetched from a dedicated table in Airtable.
+- **Secure Configuration:** All necessary Airtable credentials (API Key, Base ID, Table IDs) will be managed securely through environment variables, loaded from a `.env` file.
+- **Periodic Refresh:** The existing mechanism for periodically refreshing the content will be retained, ensuring the application stays in sync with the Airtable base.
+
+# User Experience
+- **Content Managers/Admins:** Will be able to update the agent's persona and game instructions by simply editing records in an Airtable base. The changes will be reflected in the application automatically after the configured refresh interval.
+- **Developers:** The core logic of the `PersonaManager` will remain the same, but its data-fetching methods will be abstracted to use the new Airtable provider.
+
+</context>
+
+<PRD>
+
+# Technical Architecture
+- **System Components:**
+  - `PersonaManager`: The existing class will be modified to delegate data fetching to a new `AirtableProvider`.
+  - `AirtableProvider` (New): A new module responsible for all communication with the Airtable API. It will handle API requests, authentication, and basic data transformation.
+- **Data Models:**
+  - **Airtable Base:** A single base will be used.
+    - `Agent Personas` Table:
+        - `Name`: Single line text
+        - `Avatar Photo`: Attachment
+        - `Description`: Long text
+        - `Origin Story`: Long text
+        - `Personality`: Long text
+        - `Abilities`: Long text
+        - `Weaknesses`: Long text
+        - `Topics of Conversation`: Long text
+        - `Dialogue Style`: Long text
+        - `Catchphrases`: Long text
+    - `Games` Table:
+        - `Name`: Single line text
+        - `Alias`: Single line text
+        - `Banner`: Attachment
+        - `Description`: Long text
+        - `Instructions`: Long text
+        - `Win Conditions`: Long text
+        - `Events structure`: Long text
+    - `Platforms` Table:
+        - `Name`: Single line text
+        - `Logo`: Attachment
+        - `Description`: Long text
+        - `Access Methods`: Mulitple select
+        - `Supported Games`: Link to "Games"
+        - `Wagering Options`: Multiple select
+        - `Official Website`: URL
+- **APIs and Integrations:**
+  - The official Airtable REST API will be used for fetching records.
+  - The `airtable.js` client library will be used to simplify API interactions.
+- **Infrastructure Requirements:**
+  - An Airtable account with a configured base and the tables described above.
+  - Environment variables in the `.env` file:
+    - `AIRTABLE_API_KEY`
+    - `AIRTABLE_BASE_ID`
+    - `AIRTABLE_PERSONA_TABLE_ID`
+    - `AIRTABLE_GAMES_TABLE_ID`
+    - `AIRTABLE_PLATFORMS_TABLE_ID`
+
+# Development Roadmap
+- **MVP Requirements:**
+  1.  **Setup:** Add `airtable` package to `package.json`.
+  2.  **Configuration:** Update `src/app/config/env/index.ts` to include the new Airtable-related environment variables.
+  3.  **Airtable Provider:** Create a new `src/infra/providers/airtable.ts` module to handle all API interactions.
+  4.  **Refactor PersonaManager:**
+      - Modify `fetchPersonaTemplate` to call the `AirtableProvider` to get all the persona fields.
+      - Create a new private method, say `_buildPersonaTemplate`, that takes the raw fields from Airtable and the current platform's data and assembles them into the final persona string, mimicking the structure of the original `.txt` file.
+      - Replace `fetchChaosChessInstructions` with a new `fetchGamesInstructions` method to load all records from the `Games` table. The instructions should be stored in the `gamesInstructions` property, using the game's `Name` field as the key (alias).
+      - The `fetchPlatformData` method should fetch all records from the `Platforms` table and store them in a way that allows for efficient lookup by the platform's website URL.
+      - Update the `setup` method to call the new fetchers for persona, games, and platforms.
+  5.  **Update `chat.ts` for Platform Awareness:**
+      - Add an optional `platform` string parameter to the websocket connection query.
+      - On connection (`open`), determine the current platform. The logic should be:
+        1.  Use the `platform` query parameter if provided.
+        2.  If not provided, get the request's `Origin` or `Host` header.
+        3.  Match the request's hostname against the `Official Website` URLs of the platforms managed by `PersonaManager`. This should handle root domains and subdomains.
+      - Fetch the corresponding platform's data from `PersonaManager`.
+      - Update the `welcomePrompt` to inject the platform's name and description into the agent's initial context, for example: `[SYSTEM]: You are currently operating on the ${platform.name} platform. Here is a description of it: ${platform.description}`.
+  6.  **Cleanup:** Remove `fs/promises` and `path` imports from `PersonaManager`.
+- **Future Enhancements:**
+  - Implement a more robust caching strategy (e.g., Redis) if the refresh interval becomes very short or the Airtable API rate limits become a concern.
+  - Add data validation (e.g., using Zod) to ensure the data fetched from Airtable matches the expected schema.
+
+# Logical Dependency Chain
+1.  Install the `airtable` dependency.
+2.  Define and load the required environment variables for all three tables (Agent Personas, Games, Platforms).
+3.  Implement the `AirtableProvider` to fetch data from the `Agent Personas`, `Games`, and `Platforms` tables.
+4.  Integrate the `AirtableProvider` into `PersonaManager`, replacing the existing file system calls for persona, games, and platforms.
+5.  Update `PersonaManager` to fetch and store data for the persona, all games, and all platforms. The platform data should be indexed by URL for easy lookup.
+6.  Update `chat.ts` to include the platform detection logic (from query parameter or URL) on new connections.
+7.  Modify the `welcomePrompt` in `chat.ts` to inject the dynamically determined game and platform context into the agent's initial prompt.
+8.  Ensure the application initializes correctly and fetches all data on startup.
+9.  Verify that the periodic refresh mechanism works as expected with the new Airtable integration.
+
+# Risks and Mitigations
+- **Risk:** Airtable API downtime or rate limiting.
+  - **Mitigation:** The current implementation already handles this by logging a warning and using the existing (last-known-good) persona. This behavior will be maintained. No initial data will be available if the API is down on the first startup, so a default, hardcoded persona could be used as a fallback.
+- **Risk:** Incorrectly configured Airtable base or missing records.
+  - **Mitigation:** The `AirtableProvider` will include clear error logging to diagnose configuration issues. The `PersonaManager` will gracefully handle null responses.
+- **Risk:** Security of API keys.
+  - **Mitigation:** Keys will be managed via the `.env` file, which is already included in `.gitignore` to prevent accidental commits.
+
+</PRD>
