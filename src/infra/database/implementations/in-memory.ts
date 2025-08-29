@@ -19,13 +19,7 @@ export class InMemoryDatabase implements ChatsRepository, PersonasRepository {
   private readonly chats: Record<string, Chat> = {};
   private readonly cache = new SimpleCache();
 
-  constructor(private readonly personasRepository: PersonasRepository) {
-    this.initialize();
-  }
-
-  private async initialize(): Promise<void> {
-    await this.refreshData();
-  }
+  constructor(private readonly personasRepository: PersonasRepository) {}
 
   // ChatsRepository implementation
   async getChat(chatId: string): Promise<Chat | null> {
