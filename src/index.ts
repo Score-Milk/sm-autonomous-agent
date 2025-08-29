@@ -1,9 +1,9 @@
 import { Elysia } from 'elysia';
 import { env } from './app/config/env';
+import { PersonaManager } from './app/models/persona-manager';
+import { InMemoryDatabase } from './infra/database/implementations/in-memory';
 import { chatRouter } from './infra/http/chat';
 import { AirtableProvider } from './infra/providers/airtable-provider';
-import { InMemoryDatabase } from './infra/database/implementations/in-memory';
-import { PersonaManager } from './app/models/persona-manager';
 
 export const airtableProvider = new AirtableProvider();
 export const db = new InMemoryDatabase(airtableProvider);

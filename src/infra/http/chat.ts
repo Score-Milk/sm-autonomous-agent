@@ -1,8 +1,8 @@
 import Elysia, { t } from 'elysia';
+import { db } from '../..';
 import { env } from '../../app/config/env';
 import { Message, MessageMapper } from '../../app/models/message';
 import { detectPlatform } from '../../app/utils/platform';
-import { db } from '../..';
 
 const NOREPLY_REGEX = /^\s*\[NOREPLY\]\s*$/i;
 

@@ -9,9 +9,9 @@ export interface PersonasRepository {
   getGames(): Promise<Game[]>;
   getPlatforms(): Promise<Platform[]>;
 
-  getPersonaByName(name: string): Promise<Persona | undefined>;
-  getGameByAlias(alias: string): Promise<Game | undefined>;
-  getPlatformByUrl(url: string): Promise<Platform | undefined>;
+  getPersonaByName(name: string): Promise<Persona | null>;
+  getGameByAlias(alias: string): Promise<Game | null>;
+  getPlatformByUrl(url: string): Promise<Platform | null>;
 
   refreshData(): Promise<void>;
 }

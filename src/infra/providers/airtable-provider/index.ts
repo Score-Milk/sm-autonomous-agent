@@ -105,14 +105,14 @@ export class AirtableProvider implements PersonaLoader, PersonasRepository {
     }
   }
 
-  async getPersonaByName(name: string): Promise<Persona | undefined> {
+  async getPersonaByName(name: string): Promise<Persona | null> {
     let personaMap =
       this.cache.get<Record<string, Persona>>('personas-by-name');
     if (!personaMap) {
       await this.getPersonas();
       personaMap = this.cache.get<Record<string, Persona>>('personas-by-name');
     }
-    return personaMap?.[name];
+    return personaMap?.[name] ?? null;
   }
 
   async getGames(): Promise<Game[]> {
@@ -162,13 +162,13 @@ export class AirtableProvider implements PersonaLoader, PersonasRepository {
     }
   }
 
-  async getGameByAlias(alias: string): Promise<Game | undefined> {
+  async getGameByAlias(alias: string): Promise<Game | null> {
     let gameMap = this.cache.get<Record<string, Game>>('games-by-alias');
     if (!gameMap) {
       await this.getGames();
       gameMap = this.cache.get<Record<string, Game>>('games-by-alias');
     }
-    return gameMap?.[alias];
+    return gameMap?.[alias] ?? null;
   }
 
   async getPlatforms(): Promise<Platform[]> {
@@ -231,7 +231,7 @@ export class AirtableProvider implements PersonaLoader, PersonasRepository {
     }
   }
 
-  async getPlatformByUrl(url: string): Promise<Platform | undefined> {
+  async getPlatformByUrl(url: string): Promise<Platform | null> {
     let platformMap =
       this.cache.get<Record<string, Platform>>('platforms-by-url');
     if (!platformMap) {
@@ -242,12 +242,12 @@ export class AirtableProvider implements PersonaLoader, PersonasRepository {
 
     try {
       const normalizedUrl = normalizeUrl(url);
-      if (!normalizedUrl) return;
+      if (!normalizedUrl) return null;
 
-      return platformMap?.[normalizedUrl];
+      return platformMap?.[normalizedUrl] ?? null;
     } catch (error) {
       console.warn(`Invalid URL for platform lookup: ${url}`, error);
-      return;
+      return null;
     }
   }
 

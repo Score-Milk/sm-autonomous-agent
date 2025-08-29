@@ -89,20 +89,20 @@ export class InMemoryDatabase implements ChatsRepository, PersonasRepository {
     return Object.values(data);
   }
 
-  async getPersonaByName(name: string): Promise<Persona | undefined> {
+  async getPersonaByName(name: string): Promise<Persona | null> {
     const personas = await this.getPersonas();
-    return personas.find((p) => p.name === name);
+    return personas.find((p) => p.name === name) || null;
   }
 
-  async getGameByAlias(alias: string): Promise<Game | undefined> {
+  async getGameByAlias(alias: string): Promise<Game | null> {
     const games = await this.getGames();
-    return games.find((g) => g.alias === alias);
+    return games.find((g) => g.alias === alias) || null;
   }
 
-  async getPlatformByUrl(url: string): Promise<Platform | undefined> {
+  async getPlatformByUrl(url: string): Promise<Platform | null> {
     const platforms = await this.getPlatforms();
     const normalized = normalizeUrl(url);
-    return platforms.find((p) => normalizeUrl(p.url) === normalized);
+    return platforms.find((p) => normalizeUrl(p.url) === normalized) || null;
   }
 
   async refreshData(): Promise<void> {
