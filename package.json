@@ -5,7 +5,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
-    "format": "biome check --write ./src"
+    "format": "biome check --write ./src",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "airtable": "^0.12.2",
