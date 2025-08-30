@@ -89,6 +89,16 @@ jobs:
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["screen -S ${{ env.APP_NAME }} -X quit"]}'
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters '{"commands":["cd /home/ubuntu/${{ env.APP_NAME }} && screen -dmS ${{ env.APP_NAME }} /home/ubuntu/.bun/bin/bun run start"]}'
 
+      - name: Wait for application to start
+        run: sleep 10
+
+      - name: Health check
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: ${{ vars.API_URL }}/health
+          max-attempts: 5
+          retry-delay: 10s
+
       - name: Post to a Slack channel - SUCCESS
         if: success()
         uses: slackapi/slack-github-action@v1.23.0
