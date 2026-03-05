@@ -30,7 +30,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "STARTED - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
+              "text": "STARTED - deploying sm-autonomous-agent to ${{ env.ENVIRONMENT }}",
               "attachments": [
                   {
                       "color": "#9DC08B",
@@ -67,7 +67,7 @@ jobs:
       #     echo "AIRTABLE_PLATFORMS_TABLE_ID=${{ secrets.AIRTABLE_PLATFORMS_TABLE_ID }}" >> .env
 
       - name: Create deployment package
-        run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf /tmp/${{ env.APP_NAME }}.tar.gz .
+        run: tar --exclude='./.git' --exclude='./.github' --exclude='./node_modules' -cvzf /tmp/sm-autonomous-agent.tar.gz .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -78,16 +78,16 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          aws s3 cp /tmp/${{ env.APP_NAME }}.tar.gz s3://ec2-applications/${{ env.APP_NAME }}-${{ env.ENVIRONMENT }}.tar.gz
-          aws s3 cp sm-autonomous-agent.service s3://ec2-applications/${{ env.APP_NAME }}.service
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}-${{ env.ENVIRONMENT }}.tar.gz /home/ubuntu/${{ env.APP_NAME }}.tar.gz"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/${{ env.APP_NAME }}.tar.gz -C /home/ubuntu/services/${{ env.APP_NAME }} --strip-components=1"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/services/${{ env.APP_NAME }} && /home/ubuntu/.bun/bin/bun install"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/${{ env.APP_NAME }}.service /tmp/${{ env.APP_NAME }}.service"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo mv /tmp/${{ env.APP_NAME }}.service /etc/systemd/system/${{ env.APP_NAME }}.service"]
+          aws s3 cp /tmp/sm-autonomous-agent.tar.gz s3://ec2-applications/sm-autonomous-agent.tar.gz
+          aws s3 cp sm-autonomous-agent.service s3://ec2-applications/sm-autonomous-agent.service
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/sm-autonomous-agent.tar.gz /home/ubuntu/services/sm-autonomous-agent/sm-autonomous-agent.tar.gz"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["aws s3 cp s3://ec2-applications/sm-autonomous-agent.service /home/ubuntu/services/sm-autonomous-agent/sm-autonomous-agent.service"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo mv /home/ubuntu/services/sm-autonomous-agent/sm-autonomous-agent.service /etc/systemd/system/sm-autonomous-agent.service"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["tar -xvzf /home/ubuntu/services/sm-autonomous-agent/sm-autonomous-agent.tar.gz -C /home/ubuntu/services/sm-autonomous-agent/"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["cd /home/ubuntu/services/sm-autonomous-agent && /home/ubuntu/.bun/bin/bun install"]
           aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo systemctl daemon-reload"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo systemctl enable ${{ env.APP_NAME }}"]
-          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo systemctl restart ${{ env.APP_NAME }}"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo systemctl enable sm-autonomous-agent"]
+          aws ssm send-command --instance-ids ${{ env.EC2_INSTANCE_ID }} --document-name "AWS-RunShellScript" --parameters commands=["sudo systemctl restart sm-autonomous-agent"]
 
       - name: Wait for application to start
         run: sleep 10
@@ -106,7 +106,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "SUCCESS - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }}",
+              "text": "SUCCESS - deploying sm-autonomous-agent to ${{ env.ENVIRONMENT }}",
               "attachments": [
                   {
                       "color": "#9DC08B",
@@ -132,7 +132,7 @@ jobs:
           channel-id: 'builds'
           payload: |
             {
-              "text": "FAILURE - deploying ${{ env.APP_NAME }} to ${{ env.ENVIRONMENT }} <!channel>",
+              "text": "FAILURE - deploying sm-autonomous-agent to ${{ env.ENVIRONMENT }} <!channel>",
               "attachments": [
                   {
                       "color": "#E21818",
