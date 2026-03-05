@@ -1,0 +1,21 @@
+[Unit]
+Description=SM Autonomous Agent service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/services/sm-autonomous-agent
+
+ExecStart=/home/ubuntu/.bun/bin/bun run start
+
+Restart=always
+RestartSec=5
+
+EnvironmentFile=/home/ubuntu/services/sm-autonomous-agent/.env
+
+StandardOutput=append:/var/log/sm-autonomous-agent.log
+StandardError=append:/var/log/sm-autonomous-agent.log
+
+[Install]
+WantedBy=multi-user.target
