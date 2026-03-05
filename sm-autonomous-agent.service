@@ -7,6 +7,8 @@ Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/services/sm-autonomous-agent
 
+Environment="PATH=/home/ubuntu/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+
 ExecStart=/home/ubuntu/.bun/bin/bun run start
 
 Restart=always
